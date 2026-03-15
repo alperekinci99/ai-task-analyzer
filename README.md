@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Task Spec Analyzer (MVP)
 
-## Getting Started
+Geliştiricilerin AI coding asistanlarına verdikleri prompt/task açıklamalarını analiz eder ve iyileştirilmiş bir prompt önerir.
 
-First, run the development server:
+## Stack
+
+- Next.js 14 (App Router)
+- TypeScript
+- TailwindCSS
+- Next.js API Routes
+- Local rule-based analyzer (deterministic)
+
+## Kurulum
+
+1) Bağımlılıkları kurun ve çalıştırın:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama: `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`POST /api/analyze`
 
-## Learn More
+Body:
 
-To learn more about Next.js, take a look at the following resources:
+```json
+{ "prompt": "...", "mode": "standalone" }
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`mode` (opsiyonel):
+- `standalone` (default): Prompt kendi içinde stack/bağlam/çevre bilgisini içermeli.
+- `agent`: Repo-aware. Server-side olarak proje stack’i çıkarılır; prompt’ta teknoloji belirtmek çoğu zaman opsiyoneldir (override edecekseniz yazın).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Response: prompt analiz JSON'u (score + breakdown + issues + suggestions + optimized_prompt).
 
-## Deploy on Vercel
+Notlar:
+- `agent` modunda response ayrıca `mode` ve `project_context` alanlarını içerebilir.
+- Olası stack uyuşmazlıkları `warnings`/`issues` içinde raporlanır.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Klasör Yapısı
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/` (UI + API route)
+- `components/PromptInput.tsx`
+- `components/AnalysisResult.tsx`
+- `lib/analyzePrompt.ts`
+- `app/api/analyze/route.ts`

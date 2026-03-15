@@ -1,0 +1,35 @@
+.shell {
+  @apply min-h-screen bg-gray-50;
+}
+
+.header {
+  @apply border-b border-gray-200 bg-white;
+}
+
+.headerInner {
+  @apply mx-auto max-w-5xl px-6 py-6;
+}
+
+.title {
+  @apply text-xl font-semibold tracking-tight text-gray-900;
+}
+
+.subtitle {
+  @apply mt-1 text-sm text-gray-600;
+}
+
+.main {
+  @apply mx-auto max-w-5xl px-6 py-8;
+}
+
+.card {
+  @apply space-y-6;
+}
+
+.error {
+  @apply rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800;
+}
+
+.results {
+  @apply pt-2;
+}
