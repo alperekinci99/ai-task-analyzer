@@ -52,7 +52,7 @@ export default function Home() {
     <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <h1 className={styles.title}>AI Task Spec Analyzer</h1>
+          <h1 className={styles.title}>AI Task &amp; Prompt Linter</h1>
           <p className={styles.subtitle}>
             Prompt/task açıklamalarını rubric ile analiz eder, iyileştirir ve optimize edilmiş bir prompt üretir.
           </p>
