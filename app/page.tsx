@@ -11,6 +11,7 @@ import styles from './page.module.scss';
 export default function Home() {
   const [prompt, setPrompt] = useState('');
   const [mode, setMode] = useState<AnalysisMode>('standalone');
+  const [projectRulesMd, setProjectRulesMd] = useState('');
   const [analysis, setAnalysis] = useState<PromptAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,20 +25,24 @@ export default function Home() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, mode }),
+        body: JSON.stringify({
+          prompt,
+          mode,
+          ...(mode === 'agent' && projectRulesMd.trim().length > 0 ? { project_rules_md: projectRulesMd } : {}),
+        }),
       });
 
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        const message = data?.error || 'Analysis failed.';
+        const message = data?.error || 'Analiz başarısız.';
         setError(String(message));
         return;
       }
 
       setAnalysis(data as PromptAnalysis);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unknown error.');
+      setError(e instanceof Error ? e.message : 'Bilinmeyen hata.');
     } finally {
       setLoading(false);
     }
@@ -62,6 +67,8 @@ export default function Home() {
             onAnalyze={onAnalyze}
             mode={mode}
             onModeChange={setMode}
+            projectRulesMd={projectRulesMd}
+            onProjectRulesMdChange={setProjectRulesMd}
             loading={loading}
           />
 

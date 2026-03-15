@@ -35,11 +35,18 @@ Body:
 - `standalone` (default): Prompt kendi içinde stack/bağlam/çevre bilgisini içermeli.
 - `agent`: Repo-aware. Server-side olarak proje stack’i çıkarılır; prompt’ta teknoloji belirtmek çoğu zaman opsiyoneldir (override edecekseniz yazın).
 
+Agent mode için opsiyonel ek alan:
+
+```json
+{ "project_rules_md": "# Project Rules\n- Do not add new dependencies\n- Keep existing public API\n..." }
+```
+
 Response: prompt analiz JSON'u (score + breakdown + issues + suggestions + optimized_prompt).
 
 Notlar:
 - `agent` modunda response ayrıca `mode` ve `project_context` alanlarını içerebilir.
 - Olası stack uyuşmazlıkları `warnings`/`issues` içinde raporlanır.
+
 
 ## Klasör Yapısı
 

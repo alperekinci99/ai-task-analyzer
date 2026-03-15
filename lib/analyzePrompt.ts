@@ -40,22 +40,40 @@ const ACTION_VERBS = [
   'optimize et',
 ];
 
-const TECH_KEYWORDS = [
-  'react',
-  'next.js',
-  'nextjs',
-  'typescript',
-  'javascript',
-  'node',
-  'node.js',
-  'tailwind',
-  'scss',
-  'sass',
-  'module scss',
-  'app router',
-  'api route',
-  'app directory',
-];
+type TechTerm =
+  | 'react'
+  | 'next.js'
+  | 'typescript'
+  | 'javascript'
+  | 'node'
+  | 'tailwind'
+  | 'scss'
+  | 'app router'
+  | 'api route'
+  | 'app directory';
+
+function detectTechMatches(text: string): TechTerm[] {
+  const hits = new Set<TechTerm>();
+
+  // Canonicalize common variants so they never count twice.
+  if (/\breact\b/i.test(text)) hits.add('react');
+  if (/\bnext(?:\.js)?\b/i.test(text)) hits.add('next.js');
+  if (/\btypescript\b/i.test(text)) hits.add('typescript');
+  if (/\bjavascript\b/i.test(text)) hits.add('javascript');
+  if (/\bnode(?:\.js)?\b/i.test(text)) hits.add('node');
+  if (/\btailwind\b/i.test(text)) hits.add('tailwind');
+
+  // Styling keywords.
+  if (/\bmodule\s+scss\b/i.test(text)) hits.add('scss');
+  else if (/\bscss\b|\bsass\b/i.test(text)) hits.add('scss');
+
+  // Next.js-specific structural hints.
+  if (/\bapp\s+router\b/i.test(text)) hits.add('app router');
+  if (/\bapi\s+route\b/i.test(text)) hits.add('api route');
+  if (/\bapp\s+directory\b/i.test(text)) hits.add('app directory');
+
+  return Array.from(hits);
+}
 
 const AGENT_CONFLICT_TERMS = [
   // Backend / different ecosystems that often signal a mismatch for a Next/React repo.
@@ -282,6 +300,39 @@ function matchedPhrases(text: string, phrases: string[]): string[] {
 
 function uniqueMatches(text: string, phrases: string[]): string[] {
   return Array.from(new Set(matchedPhrases(text, phrases)));
+}
+
+function extractRuleHighlights(rulesMd: string): string[] {
+  const lines = rulesMd
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const picked: string[] = [];
+  for (const line of lines) {
+    const unbulleted = line.replace(/^(?:-|||\*|\d+\.)\s+/, '').trim();
+    if (!unbulleted) continue;
+
+    if (/(?:do not|don't|dont|must|should|never)\b/i.test(unbulleted)) picked.push(unbulleted);
+    else if (/(?:kullanma|yasak|yapma|etme|zorunlu|gerekmeli|şart|sart)\b/i.test(unbulleted)) picked.push(unbulleted);
+    else if (/acceptance criteria|definition of done|test/i.test(unbulleted)) picked.push(unbulleted);
+    if (picked.length >= 5) break;
+  }
+
+  return Array.from(new Set(picked)).slice(0, 5);
+}
+
+function hasNoNewDepsRule(text: string): boolean {
+  return /no new dependencies|do not add dependencies|don't add dependencies|yeni (dependency|bağımlılık|bagimlilik) ekleme|dependency ekleme|bağımlılık ekleme/i.test(
+    text,
+  );
+}
+
+function promptSuggestsAddingDeps(text: string): boolean {
+  return /\b(npm install|yarn add|pnpm add)\b|\b(add|install)\s+(a\s+)?(new\s+)?(dependency|package)\b|\bdependency\s+ekle\b|\bpaket\s+ekle\b/i.test(
+    text,
+  );
 }
 
 function detectFileTargets(original: string): string[] {
@@ -513,7 +564,7 @@ function tokenEfficiencyScore(original: string): { score: number; issue?: string
 
 export async function analyzePrompt(
   prompt: string,
-  options?: { mode?: AnalysisMode; projectContext?: ProjectContext },
+  options?: { mode?: AnalysisMode; projectContext?: ProjectContext; projectRulesMd?: string },
 ): Promise<PromptAnalysis> {
   const original = prompt ?? '';
   const text = normalize(original);
@@ -522,6 +573,12 @@ export async function analyzePrompt(
   const mode: AnalysisMode = options?.mode ?? 'standalone';
   const projectContext = options?.projectContext;
   const inferredTerms = inferredTechTerms(projectContext);
+
+  const projectRulesMdRaw = options?.projectRulesMd ?? '';
+  const projectRulesMd = mode === 'agent' ? projectRulesMdRaw.trim() : '';
+  const hasProjectRules = projectRulesMd.length > 0;
+  const rulesText = hasProjectRules ? normalize(projectRulesMd) : '';
+  const ruleHighlights = hasProjectRules ? extractRuleHighlights(projectRulesMd) : [];
 
   const fileTargets = detectFileTargets(original);
   const hasFileTargets = fileTargets.length > 0;
@@ -556,16 +613,7 @@ export async function analyzePrompt(
   }
 
   // Context completeness (0-20)
-  const techMatches = Array.from(
-    new Set(
-      TECH_KEYWORDS.filter((t) => {
-        // Normalize next.js variants
-        if (t === 'next.js') return text.includes('next.js') || text.includes('nextjs');
-        if (t === 'node.js') return text.includes('node.js') || text.includes('node');
-        return text.includes(t);
-      }),
-    ),
-  );
+  const techMatches = detectTechMatches(text);
 
   const stackConflicts = mode === 'agent' ? detectStackConflicts(text, projectContext) : [];
   if (stackConflicts.length > 0) {
@@ -586,6 +634,11 @@ export async function analyzePrompt(
     context += 2;
 
   if (mode === 'agent') {
+    if (hasProjectRules) {
+      context += 2;
+      detected_strengths.push('Proje kuralları sağlanmış (agent mode).');
+    }
+
     if (hasFileTargets) {
       context += 2;
       detected_strengths.push('Hedef dosya/konum belirtilmiş (agent mode).');
@@ -595,6 +648,7 @@ export async function analyzePrompt(
       issues.push('Hedef dosya/konum belirtilmedi; büyük repolarda gereksiz tarama maliyeti doğurabilir.');
       suggestions.push('Hangi dosya(lar) üzerinde çalışılacağını belirtin (örn: `app/page.tsx`, `components/Foo.tsx`).');
     }
+
   }
 
   if (mode === 'agent' && inferredTerms.length > 0 && techMatches.length === 0) {
@@ -626,12 +680,23 @@ export async function analyzePrompt(
 
   // Constraints (0-10)
   const constraintMatches = uniqueMatches(text, CONSTRAINT_PHRASES);
+  const ruleConstraintMatches = mode === 'agent' && hasProjectRules ? uniqueMatches(rulesText, CONSTRAINT_PHRASES) : [];
+  const allConstraintMatches = Array.from(new Set([...constraintMatches, ...ruleConstraintMatches]));
   let constraints = 0;
-  if (constraintMatches.length > 0) constraints += 6;
-  constraints += clamp((constraintMatches.length - 1) * 2, 0, 4);
+  if (allConstraintMatches.length > 0) constraints += 6;
+  constraints += clamp((allConstraintMatches.length - 1) * 2, 0, 4);
   constraints = clamp(Math.round(constraints), 0, LIMITS.constraints);
-  if (constraintMatches.length > 0) detected_strengths.push('Kısıtlar/guardrail’ler belirtilmiş.');
-  else suggestions.push('Varsa kısıtları ekleyin (örn: public API/props değişmesin, yeni dependency ekleme).');
+  if (allConstraintMatches.length > 0) {
+    detected_strengths.push('Kısıtlar/guardrail’ler belirtilmiş.');
+  } else {
+    suggestions.push('Varsa kısıtları ekleyin (örn: public API/props değişmesin, yeni dependency ekleme).');
+  }
+
+  if (mode === 'agent' && hasProjectRules && hasNoNewDepsRule(projectRulesMd) && promptSuggestsAddingDeps(original)) {
+    warnings.push('Proje kuralları “yeni dependency ekleme” diyor; prompt dependency eklemeyi ima ediyor olabilir.');
+    issues.push('Prompt, proje kurallarıyla çelişebilir (dependency kısıtı).');
+    suggestions.push('Dependency eklemek zorundaysanız bunu açıkça gerekçelendirin veya kuralı override ettiğinizi belirtin.');
+  }
 
   // Edge cases (0-10)
   const edgeMatches = uniqueMatches(text, EDGE_CASE_TERMS);
@@ -647,10 +712,17 @@ export async function analyzePrompt(
 
   // Tool / environment instructions (0-10)
   const toolMatches = Array.from(new Set([...uniqueMatches(text, TOOL_ENV_TERMS), ...(detectVersionLike(text) ? ['version'] : [])]));
+  const ruleToolMatches =
+    mode === 'agent' && hasProjectRules
+      ? Array.from(new Set([...uniqueMatches(rulesText, TOOL_ENV_TERMS), ...(detectVersionLike(projectRulesMd) ? ['version'] : [])]))
+      : [];
   let tool = 0;
   if (toolMatches.length > 0) tool += 6;
+  else if (mode === 'agent' && ruleToolMatches.length > 0) tool += 6;
   if (detectVersionLike(text)) tool += 2;
+  else if (mode === 'agent' && hasProjectRules && detectVersionLike(projectRulesMd)) tool += 2;
   if (text.includes('app router') || text.includes('client component') || text.includes('server component')) tool += 1;
+  else if (mode === 'agent' && hasProjectRules && /app router|client component|server component/i.test(projectRulesMd)) tool += 1;
   tool += techMatches.length > 0 ? 1 : 0;
   if (mode === 'agent' && toolMatches.length === 0 && inferredTerms.length > 0) tool = Math.max(tool, 4);
   tool = clamp(Math.round(tool), 0, LIMITS.tool_instructions);
@@ -659,7 +731,7 @@ export async function analyzePrompt(
     if (mode === 'agent') {
       if (inferredTerms.length === 0) {
         suggestions.push('Çalışma ortamını netleştirin (framework sürümü, App Router, Node sürümü vb.).');
-      } else {
+      } else if (!(hasProjectRules && ruleToolMatches.length > 0)) {
         suggestions.push('Override edecekseniz, ortam/sürüm farklarını net yazın (örn: Node 20, Next.js 14.2.x).');
       }
     } else {
@@ -669,8 +741,9 @@ export async function analyzePrompt(
 
   // Definition of done (0-10)
   let dod = 0;
-  if (hasDefinitionOfDoneSignal(text)) dod += 6;
-  if (hasTestSignal(text)) dod += 3;
+  const dodText = mode === 'agent' && hasProjectRules ? `${text}\n${rulesText}` : text;
+  if (hasDefinitionOfDoneSignal(dodText)) dod += 6;
+  if (hasTestSignal(dodText)) dod += 3;
   if (hasMustShouldSignal(text)) dod += 1;
   dod = clamp(Math.round(dod), 0, LIMITS.definition_of_done);
   if (dod >= 6) detected_strengths.push('Definition of done / acceptance criteria yaklaşımı var.');
@@ -728,13 +801,17 @@ export async function analyzePrompt(
     mode === 'agent'
       ? [
           hasFileTargets ? `Hedef dosyalar: ${fileTargets.join(', ')}` : 'Hedef dosyalar: Belirtilmedi (ekleyin)',
+          hasProjectRules
+            ? ruleHighlights.length > 0
+              ? `Proje kuralları (özet):\n${ruleHighlights.map((l) => `- ${l}`).join('\n')}`
+              : 'Proje kuralları: Yüklendi'
+            : null,
           'Repo bağlamı varsayılır; override edecekseniz belirtin.',
-        ].join('\n')
+        ]
+          .filter(Boolean)
+          .join('\n')
       : techMatches.length > 0
-        ? `Teknolojiler: ${techMatches
-            .map((t) => (t === 'nextjs' ? 'next.js' : t))
-            .map((t) => (t === 'next.js' ? 'Next.js' : t))
-            .join(', ')}`
+        ? `Teknolojiler: ${techMatches.map((t) => (t === 'next.js' ? 'Next.js' : t)).join(', ')}`
         : 'Belirtilmedi, eklenmesi önerilir (örn: React/Next.js/TypeScript sürümleri)';
   const contextText = extractedContext ?? computedContextText;
 
