@@ -89,14 +89,14 @@ export default function PromptInput({
       {mode === 'agent' ? (
         <div className="space-y-2">
           <p className="text-xs text-gray-600">
-            Ajan Modu: Teknoloji/stack bilgisi repo’dan çıkarılabildiği varsayılır; prompt’ta yalnızca override edecekseniz belirtin.
+            Agent Mode: Teknoloji/stack bilgisi repo’dan çıkarılabildiği varsayılır; prompt’ta yalnızca override edecekseniz belirtin.
           </p>
 
           <div className="rounded-md border border-gray-200 bg-white p-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-xs font-semibold text-gray-900">Proje kuralları (.md) — opsiyonel</div>
-                <div className="mt-0.5 text-xs text-gray-600">Ajanın nasıl çalışacağını belirleyen kuralları yükleyin/yapıştırın.</div>
+                <div className="mt-0.5 text-xs text-gray-600">Agent'in nasıl çalışacağını belirleyen kuralları yükleyin/yapıştırın.</div>
               </div>
 
               <div className="flex items-center gap-2">

@@ -619,7 +619,7 @@ export async function analyzePrompt(
   if (stackConflicts.length > 0) {
     warnings.push(`Prompt, repo stack'i ile çelişebilir: ${stackConflicts.join(', ')}`);
     issues.push('Prompt, mevcut repo/stack ile uyumsuz teknoloji yönlendirmeleri içeriyor olabilir.');
-    suggestions.push('Agent mode kullanıyorsanız, repo stack’iyle uyumlu kalın veya override edecekseniz bunu açıkça belirtin.');
+    suggestions.push('Agent Mode kullanıyorsanız, repo stack’iyle uyumlu kalın veya override edecekseniz bunu açıkça belirtin.');
   }
 
   let context = 2;
@@ -636,15 +636,15 @@ export async function analyzePrompt(
   if (mode === 'agent') {
     if (hasProjectRules) {
       context += 2;
-      detected_strengths.push('Proje kuralları sağlanmış (agent mode).');
+      detected_strengths.push('Proje kuralları sağlanmış (Agent Mode).');
     }
 
     if (hasFileTargets) {
       context += 2;
-      detected_strengths.push('Hedef dosya/konum belirtilmiş (agent mode).');
+      detected_strengths.push('Hedef dosya/konum belirtilmiş (Agent Mode).');
     } else {
       context -= 3;
-      warnings.push('Agent mode: Hedef dosya belirtilmemiş; ajan gereksiz dosya tarayabilir (token/zaman maliyeti).');
+      warnings.push('Agent Mode: Hedef dosya belirtilmemiş; agent gereksiz dosya tarayabilir (token/zaman maliyeti).');
       issues.push('Hedef dosya/konum belirtilmedi; büyük repolarda gereksiz tarama maliyeti doğurabilir.');
       suggestions.push('Hangi dosya(lar) üzerinde çalışılacağını belirtin (örn: `app/page.tsx`, `components/Foo.tsx`).');
     }
@@ -652,7 +652,7 @@ export async function analyzePrompt(
   }
 
   if (mode === 'agent' && inferredTerms.length > 0 && techMatches.length === 0) {
-    detected_strengths.push("Repo bağlamı/stack'i çıkarılabiliyor (agent mode).");
+    detected_strengths.push("Repo bağlamı/stack'i çıkarılabiliyor (Agent Mode).");
   }
   context = clamp(Math.round(context), 0, LIMITS.context_completeness);
   if (techMatches.length > 0) detected_strengths.push('Teknoloji/stack bağlamı belirtilmiş.');
@@ -661,7 +661,7 @@ export async function analyzePrompt(
       issues.push('Bağlam/teknoloji bilgisi eksik (örn: React, Next.js, TypeScript).');
       suggestions.push('Kullandığınız stack’i ve varsa sürümleri belirtin (örn: Next.js 14, TypeScript).');
     } else {
-      suggestions.push('Agent mode’da stack çoğu zaman repo’dan çıkarılır; yalnızca override edecekseniz teknoloji/sürüm belirtin.');
+      suggestions.push('Agent Mode’da stack çoğu zaman repo’dan çıkarılır; yalnızca override edecekseniz teknoloji/sürüm belirtin.');
     }
   }
 

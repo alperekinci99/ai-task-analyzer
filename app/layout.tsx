@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'tr_TR',
     title: 'AI Task & Prompt Linter',
-    description: 'Prompt/task kalitesini rubric ile analiz edin; agent mode ile repo-aware öneriler alın.',
+    description: 'Prompt/task kalitesini rubric ile analiz edin; Agent Mode ile repo-aware öneriler alın.',
     url: '/',
     siteName: 'AI Task & Prompt Linter',
   },
