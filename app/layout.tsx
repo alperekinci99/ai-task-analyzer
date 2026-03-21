@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     default: 'AI Task & Prompt Linter',
     template: '%s | AI Task & Prompt Linter',
   },
-  description: 'AI coding asistanları için prompt/task kalitesini analiz eden, skorlayan ve iyileştirilmiş prompt şablonu üreten araç.',
+  description: 'A tool for AI coding assistants that analyzes prompt and task quality, scores them, and generates an improved prompt template.',
   applicationName: 'AI Task & Prompt Linter',
   alternates: {
     canonical: '/',
@@ -42,16 +42,16 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'tr_TR',
+    locale: 'en_US',
     title: 'AI Task & Prompt Linter',
-    description: 'Prompt/task kalitesini rubric ile analiz edin; Agent Mode ile repo-aware öneriler alın.',
+    description: 'Analyze prompt and task quality with a rubric and get repo-aware recommendations with Agent Mode.',
     url: '/',
     siteName: 'AI Task & Prompt Linter',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AI Task & Prompt Linter',
-    description: 'Prompt/task kalitesini analiz eden ve iyileştirilmiş prompt şablonu üreten araç.',
+    description: 'Analyze prompt and task quality and generate an improved prompt template.',
   },
   category: 'technology',
 };
@@ -62,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr">
+    <html lang="en">
       <body
         className={`${inter.variable} ${robotoMono.variable} antialiased`}
       >

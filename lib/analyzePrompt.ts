@@ -519,7 +519,7 @@ function hasMustShouldSignal(text: string): boolean {
 
 function tokenEfficiencyScore(original: string): { score: number; issue?: string; suggestion?: string } {
   const trimmed = original.trim();
-  if (trimmed.length === 0) return { score: 0, issue: 'Prompt boş.', suggestion: 'En az 1-2 cümlelik net bir task açıklaması ekleyin.' };
+  if (trimmed.length === 0) return { score: 0, issue: 'Prompt is empty.', suggestion: 'Add a clear 1–2 sentence task description.' };
 
   const words = wordList(trimmed);
   const total = words.length;
@@ -543,16 +543,16 @@ function tokenEfficiencyScore(original: string): { score: number; issue?: string
   const issueParts: string[] = [];
   const suggestionParts: string[] = [];
   if (total < 6) {
-    issueParts.push('Prompt çok kısa; gerekli detaylar eksik olabilir.');
-    suggestionParts.push('Kapsam, bağlam ve çıktı formatını 1-2 ek cümleyle netleştirin.');
+    issueParts.push('The prompt is too short and may be missing important details.');
+    suggestionParts.push('Clarify the scope, context, and output format with 1–2 extra sentences.');
   }
   if (trimmed.length > 1500 || total > 250) {
-    issueParts.push('Prompt gereğinden uzun; gereksiz token kullanımı riski var.');
-    suggestionParts.push('Tekrarlayan cümleleri çıkarıp, bölümlere ayrılmış kısa maddeler kullanın.');
+    issueParts.push('The prompt is longer than necessary and may waste tokens.');
+    suggestionParts.push('Remove repetitive sentences and use short, sectioned bullet points instead.');
   }
   if (uniqueness < 0.45 || maxFreq >= 10) {
-    issueParts.push('Tekrarlı ifadeler tespit edildi; token verimliliği düşebilir.');
-    suggestionParts.push('Aynı kelimeleri/cümleleri tekrarlamak yerine maddeleri birleştirin.');
+    issueParts.push('Repeated phrases were detected; token efficiency may be lower than expected.');
+    suggestionParts.push('Combine repetitive points instead of repeating the same words or sentences.');
   }
 
   return {
@@ -590,9 +590,9 @@ export async function analyzePrompt(
 
   const ambiguous = uniqueMatches(text, AMBIGUOUS_PHRASES);
   if (ambiguous.length > 0) {
-    for (const phrase of ambiguous) warnings.push(`Muğlak ifade tespit edildi: "${phrase}"`);
-    issues.push('Muğlak talimatlar var; kapsam ve başarı ölçütleri net değil.');
-    suggestions.push('Muğlak ifadeleri ölçülebilir hedefler ve net acceptance criteria ile değiştirin.');
+    for (const phrase of ambiguous) warnings.push(`Ambiguous phrase detected: "${phrase}"`);
+    issues.push('The prompt contains ambiguous instructions; scope and success criteria are unclear.');
+    suggestions.push('Replace ambiguous phrases with measurable goals and explicit acceptance criteria.');
   }
 
   // Goal clarity (0-20)
@@ -606,10 +606,10 @@ export async function analyzePrompt(
   if (words.length < 10) goal -= 3;
   if (ambiguous.length > 0 && verbMatches.length === 0) goal -= 4;
   goal = clamp(Math.round(goal), 0, LIMITS.goal_clarity);
-  if (verbMatches.length > 0) detected_strengths.push('Net aksiyon fiilleri içeriyor.');
+  if (verbMatches.length > 0) detected_strengths.push('Contains clear action verbs.');
   else {
-    issues.push('Amaç/eylem net değil; refactor/create/fix gibi bir aksiyon fiili eklenmeli.');
-    suggestions.push('Hedefi tek cümlede netleştirin (örn: "Create ...", "Refactor ...").');
+    issues.push('The objective/action is unclear; add an action verb like refactor, create, or fix.');
+    suggestions.push('Clarify the objective in a single sentence (for example: "Create ...", "Refactor ...").');
   }
 
   // Context completeness (0-20)
@@ -617,9 +617,9 @@ export async function analyzePrompt(
 
   const stackConflicts = mode === 'agent' ? detectStackConflicts(text, projectContext) : [];
   if (stackConflicts.length > 0) {
-    warnings.push(`Prompt, repo stack'i ile çelişebilir: ${stackConflicts.join(', ')}`);
-    issues.push('Prompt, mevcut repo/stack ile uyumsuz teknoloji yönlendirmeleri içeriyor olabilir.');
-    suggestions.push('Agent Mode kullanıyorsanız, repo stack’iyle uyumlu kalın veya override edecekseniz bunu açıkça belirtin.');
+    warnings.push(`The prompt may conflict with the repo stack: ${stackConflicts.join(', ')}`);
+    issues.push('The prompt may include technology directions that are incompatible with the current repo/stack.');
+    suggestions.push('If you are using Agent Mode, stay aligned with the repo stack or explicitly state that you want to override it.');
   }
 
   let context = 2;
@@ -636,32 +636,32 @@ export async function analyzePrompt(
   if (mode === 'agent') {
     if (hasProjectRules) {
       context += 2;
-      detected_strengths.push('Proje kuralları sağlanmış (Agent Mode).');
+      detected_strengths.push('Project rules were provided (Agent Mode).');
     }
 
     if (hasFileTargets) {
       context += 2;
-      detected_strengths.push('Hedef dosya/konum belirtilmiş (Agent Mode).');
+      detected_strengths.push('Target file/path specified (Agent Mode).');
     } else {
       context -= 3;
-      warnings.push('Agent Mode: Hedef dosya belirtilmemiş; agent gereksiz dosya tarayabilir (token/zaman maliyeti).');
-      issues.push('Hedef dosya/konum belirtilmedi; büyük repolarda gereksiz tarama maliyeti doğurabilir.');
-      suggestions.push('Hangi dosya(lar) üzerinde çalışılacağını belirtin (örn: `app/page.tsx`, `components/Foo.tsx`).');
+      warnings.push('Agent Mode: No target file was specified; the agent may scan unnecessary files (token/time cost).');
+      issues.push('No target file/path was specified; this may create unnecessary scanning cost in larger repos.');
+      suggestions.push('Specify which file(s) should be edited (for example: `app/page.tsx`, `components/Foo.tsx`).');
     }
 
   }
 
   if (mode === 'agent' && inferredTerms.length > 0 && techMatches.length === 0) {
-    detected_strengths.push("Repo bağlamı/stack'i çıkarılabiliyor (Agent Mode).");
+    detected_strengths.push("Repo context/stack can be inferred (Agent Mode).");
   }
   context = clamp(Math.round(context), 0, LIMITS.context_completeness);
-  if (techMatches.length > 0) detected_strengths.push('Teknoloji/stack bağlamı belirtilmiş.');
+  if (techMatches.length > 0) detected_strengths.push('Technology/stack context is specified.');
   else {
     if (mode === 'standalone') {
-      issues.push('Bağlam/teknoloji bilgisi eksik (örn: React, Next.js, TypeScript).');
-      suggestions.push('Kullandığınız stack’i ve varsa sürümleri belirtin (örn: Next.js 14, TypeScript).');
+      issues.push('Context/technology details are missing (for example: React, Next.js, TypeScript).');
+      suggestions.push('Specify your stack and versions if relevant (for example: Next.js 14, TypeScript).');
     } else {
-      suggestions.push('Agent Mode’da stack çoğu zaman repo’dan çıkarılır; yalnızca override edecekseniz teknoloji/sürüm belirtin.');
+      suggestions.push('In Agent Mode, the stack can usually be inferred from the repo; only specify technologies/versions if you want to override them.');
     }
   }
 
@@ -672,10 +672,10 @@ export async function analyzePrompt(
   output += clamp((outputMatches.length - 1) * 2, 0, 3);
   if (/json|diff|patch|code|component|endpoint/i.test(text)) output += 1;
   output = clamp(Math.round(output), 0, LIMITS.output_specification);
-  if (outputMatches.length > 0) detected_strengths.push('Çıktı formatına dair ipuçları içeriyor.');
+  if (outputMatches.length > 0) detected_strengths.push('Includes clues about the desired output format.');
   else {
-    issues.push('Beklenen çıktı formatı belirtilmemiş (kod/diff/JSON vb.).');
-    suggestions.push('Beklenen çıktıyı net yazın: tam kod mu, sadece diff mi, JSON formatı mı?');
+    issues.push('The expected output format is not specified (code/diff/JSON/etc.).');
+    suggestions.push('Clearly specify the expected output: full code, diff only, JSON format, and so on.');
   }
 
   // Constraints (0-10)
@@ -687,15 +687,15 @@ export async function analyzePrompt(
   constraints += clamp((allConstraintMatches.length - 1) * 2, 0, 4);
   constraints = clamp(Math.round(constraints), 0, LIMITS.constraints);
   if (allConstraintMatches.length > 0) {
-    detected_strengths.push('Kısıtlar/guardrail’ler belirtilmiş.');
+    detected_strengths.push('Constraints/guardrails are specified.');
   } else {
-    suggestions.push('Varsa kısıtları ekleyin (örn: public API/props değişmesin, yeni dependency ekleme).');
+    suggestions.push('Add constraints if relevant (for example: keep the public API/props unchanged, do not add new dependencies).');
   }
 
   if (mode === 'agent' && hasProjectRules && hasNoNewDepsRule(projectRulesMd) && promptSuggestsAddingDeps(original)) {
-    warnings.push('Proje kuralları “yeni dependency ekleme” diyor; prompt dependency eklemeyi ima ediyor olabilir.');
-    issues.push('Prompt, proje kurallarıyla çelişebilir (dependency kısıtı).');
-    suggestions.push('Dependency eklemek zorundaysanız bunu açıkça gerekçelendirin veya kuralı override ettiğinizi belirtin.');
+    warnings.push('Project rules say “do not add new dependencies”; the prompt may be implying a new dependency.');
+    issues.push('The prompt may conflict with the project rules (dependency constraint).');
+    suggestions.push('If you must add a dependency, justify it explicitly or say that you are overriding the rule.');
   }
 
   // Edge cases (0-10)
@@ -704,10 +704,10 @@ export async function analyzePrompt(
   if (edgeMatches.length > 0) edge += 6;
   edge += clamp(edgeMatches.length, 0, 4);
   edge = clamp(Math.round(edge), 0, LIMITS.edge_cases);
-  if (edgeMatches.length > 0) detected_strengths.push('Edge case’lere değinilmiş (loading/error/empty state vb.).');
+  if (edgeMatches.length > 0) detected_strengths.push('Mentions edge cases (loading/error/empty state/etc.).');
   else {
-    issues.push("Edge case'ler eksik (loading/error/empty state vb.).");
-    suggestions.push("En az 2-3 edge case belirtin (loading, error, empty state, null/undefined).");
+    issues.push('Edge cases are missing (loading/error/empty state/etc.).');
+    suggestions.push('Specify at least 2–3 edge cases (loading, error, empty state, null/undefined).');
   }
 
   // Tool / environment instructions (0-10)
@@ -726,16 +726,16 @@ export async function analyzePrompt(
   tool += techMatches.length > 0 ? 1 : 0;
   if (mode === 'agent' && toolMatches.length === 0 && inferredTerms.length > 0) tool = Math.max(tool, 4);
   tool = clamp(Math.round(tool), 0, LIMITS.tool_instructions);
-  if (toolMatches.length > 0) detected_strengths.push('Tool/environment talimatları içeriyor (sürüm/runtime vb.).');
+  if (toolMatches.length > 0) detected_strengths.push('Includes tool/environment instructions (version/runtime/etc.).');
   else {
     if (mode === 'agent') {
       if (inferredTerms.length === 0) {
-        suggestions.push('Çalışma ortamını netleştirin (framework sürümü, App Router, Node sürümü vb.).');
+        suggestions.push('Clarify the working environment (framework version, App Router, Node version, etc.).');
       } else if (!(hasProjectRules && ruleToolMatches.length > 0)) {
-        suggestions.push('Override edecekseniz, ortam/sürüm farklarını net yazın (örn: Node 20, Next.js 14.2.x).');
+        suggestions.push('If you plan to override the environment, clearly state the version/runtime differences (for example: Node 20, Next.js 14.2.x).');
       }
     } else {
-      suggestions.push('Çalışma ortamını netleştirin (framework sürümü, App Router, Node sürümü vb.).');
+      suggestions.push('Clarify the working environment (framework version, App Router, Node version, etc.).');
     }
   }
 
@@ -746,10 +746,10 @@ export async function analyzePrompt(
   if (hasTestSignal(dodText)) dod += 3;
   if (hasMustShouldSignal(text)) dod += 1;
   dod = clamp(Math.round(dod), 0, LIMITS.definition_of_done);
-  if (dod >= 6) detected_strengths.push('Definition of done / acceptance criteria yaklaşımı var.');
+  if (dod >= 6) detected_strengths.push('Includes a definition of done / acceptance criteria approach.');
   else {
-    issues.push('Definition of done / acceptance criteria net değil.');
-    suggestions.push('Tamamlanma kriterlerini maddeler halinde ekleyin (testler geçmeli, davranış X olmalı vb.).');
+    issues.push('The definition of done / acceptance criteria is unclear.');
+    suggestions.push('Add completion criteria as bullet points (tests should pass, behavior X should hold, etc.).');
   }
 
   // Token efficiency (0-5)
@@ -761,8 +761,8 @@ export async function analyzePrompt(
 
   // Additional issues: ambiguous-only prompts
   if (words.length <= 8 && ambiguous.length > 0) {
-    issues.push('Prompt çok genel ve muğlak; uygulanabilir bir görev tanımı değil.');
-    suggestions.push('Somut görev, bağlam, kısıt ve çıktı formatı ekleyin.');
+    issues.push('The prompt is too general and ambiguous; it is not an actionable task description.');
+    suggestions.push('Add a concrete task, context, constraints, and output format.');
   }
 
   // Deduplicate issues/suggestions
@@ -795,43 +795,43 @@ export async function analyzePrompt(
   const extractedAcceptance = extractSection(original, 'Acceptance Criteria');
 
   const objectiveCandidate = extractedObjective ?? getFirstMeaningfulLine(original) ?? getFirstLine(original) ?? original.trim();
-  const objective = objectiveCandidate && objectiveCandidate.trim().length > 0 ? objectiveCandidate.trim() : 'Belirtilmedi, eklenmesi önerilir';
+  const objective = objectiveCandidate && objectiveCandidate.trim().length > 0 ? objectiveCandidate.trim() : 'Not specified — recommended to add';
 
   const computedContextText =
     mode === 'agent'
       ? [
-          hasFileTargets ? `Hedef dosyalar: ${fileTargets.join(', ')}` : 'Hedef dosyalar: Belirtilmedi (ekleyin)',
+          hasFileTargets ? `Target files: ${fileTargets.join(', ')}` : 'Target files: Not specified (recommended)',
           hasProjectRules
             ? ruleHighlights.length > 0
-              ? `Proje kuralları (özet):\n${ruleHighlights.map((l) => `- ${l}`).join('\n')}`
-              : 'Proje kuralları: Yüklendi'
+              ? `Project rules (summary):\n${ruleHighlights.map((l) => `- ${l}`).join('\n')}`
+              : 'Project rules: Provided'
             : null,
-          'Repo bağlamı varsayılır; override edecekseniz belirtin.',
+          'Repo context is assumed; explicitly state any overrides.',
         ]
           .filter(Boolean)
           .join('\n')
       : techMatches.length > 0
-        ? `Teknolojiler: ${techMatches.map((t) => (t === 'next.js' ? 'Next.js' : t)).join(', ')}`
-        : 'Belirtilmedi, eklenmesi önerilir (örn: React/Next.js/TypeScript sürümleri)';
+        ? `Technologies: ${techMatches.map((t) => (t === 'next.js' ? 'Next.js' : t)).join(', ')}`
+        : 'Not specified — recommended to add (for example: React/Next.js/TypeScript versions)';
   const contextText = extractedContext ?? computedContextText;
 
   const computedConstraintsText =
     constraintMatches.length > 0
       ? constraintMatches.map((c) => `- ${c}`).join('\n')
-      : '- Belirtilmedi, eklenmesi önerilir (örn: public API/props değişmesin, yeni dependency eklenmesin)';
+      : '- Not specified — recommended to add (for example: keep public API/props unchanged, do not add new dependencies)';
   const constraintsText = extractedConstraints ?? computedConstraintsText;
 
   const computedExpectedOutputText =
     outputMatches.length > 0
-      ? `- İstenen çıktı formatı sinyali: ${outputMatches.join(', ')}`
-      : '- Belirtilmedi, eklenmesi önerilir (örn: tam kod, sadece diff, JSON şeması)';
+      ? `- Detected desired output format signal: ${outputMatches.join(', ')}`
+      : '- Not specified — recommended to add (for example: full code, diff only, JSON schema)';
   const expectedOutputText = extractedExpectedOutput ?? computedExpectedOutputText;
 
   const acceptanceLines = getAcceptanceLikeLines(original);
   const computedAcceptanceText =
     acceptanceLines.length > 0
       ? acceptanceLines.map((l) => `- ${l}`).join('\n')
-      : '- Belirtilmedi, eklenmesi önerilir (örn: testler geçmeli, UI bozulmamalı, edge case’ler ele alınmalı)';
+      : '- Not specified — recommended to add (for example: tests should pass, UI should remain intact, edge cases should be handled)';
   const acceptanceText = extractedAcceptance ?? computedAcceptanceText;
 
   const optimized_prompt = [

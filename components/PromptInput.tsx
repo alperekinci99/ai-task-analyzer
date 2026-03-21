@@ -27,8 +27,8 @@ export default function PromptInput({
 }: Props) {
   const examples = useMemo(
     () => [
-      'Bu React bileşenini performans için refactor et.',
-      'Hash state okuyup analytics event gönderen bir Next.js wishlist bileşeni oluştur.',
+      'Refactor this React component to improve performance.',
+      'Create a Next.js wishlist component that reads hash state and sends analytics events.',
     ],
     [],
   );
@@ -48,11 +48,11 @@ export default function PromptInput({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
           <h2 className="text-sm font-semibold text-gray-900">Prompt</h2>
-          <p className="text-sm text-gray-600">Analiz etmek istediğiniz task açıklamasını yapıştırın.</p>
+          <p className="text-sm text-gray-600">Paste the task or prompt you want to analyze.</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
           <label className="flex w-full flex-col gap-1 text-xs font-medium text-gray-700 sm:w-auto">
-            Mod
+            Mode
             <select
               value={mode}
               onChange={(e) => onModeChange(e.target.value as AnalysisMode)}
@@ -70,13 +70,13 @@ export default function PromptInput({
             disabled={loading || prompt.trim().length === 0}
             className="inline-flex h-9 w-full items-center justify-center rounded-md bg-black px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
-            {loading ? 'Analiz ediliyor…' : 'Promptu Analiz Et'}
+            {loading ? 'Analyzing…' : 'Analyze Prompt'}
           </button>
         </div>
       </div>
 
       <div className="space-y-1">
-        <div className="text-xs font-medium text-gray-700">Prompt metni</div>
+        <div className="text-xs font-medium text-gray-700">Prompt text</div>
         <textarea
           value={prompt}
           onChange={(e) => onPromptChange(e.target.value)}
@@ -89,19 +89,19 @@ export default function PromptInput({
       {mode === 'agent' ? (
         <div className="space-y-2">
           <p className="text-xs text-gray-600">
-            Agent Mode: Teknoloji/stack bilgisi repo’dan çıkarılabildiği varsayılır; prompt’ta yalnızca override edecekseniz belirtin.
+            Agent Mode: The technology/stack is assumed to be inferable from the repo; only specify it in the prompt if you want to override it.
           </p>
 
           <div className="rounded-md border border-gray-200 bg-white p-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-xs font-semibold text-gray-900">Proje kuralları (.md) — opsiyonel</div>
-                <div className="mt-0.5 text-xs text-gray-600">Agent'in nasıl çalışacağını belirleyen kuralları yükleyin/yapıştırın.</div>
+                <div className="text-xs font-semibold text-gray-900">Project rules (.md) — optional</div>
+                <div className="mt-0.5 text-xs text-gray-600">Upload or paste rules that define how the agent should work.</div>
               </div>
 
               <div className="flex items-center gap-2">
                 <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-900 hover:bg-gray-50">
-                  .md yükle
+                  Upload .md
                   <input
                     type="file"
                     accept=".md,text/markdown"
@@ -117,7 +117,7 @@ export default function PromptInput({
                   onClick={() => onProjectRulesMdChange('')}
                   disabled={loading || projectRulesMd.trim().length === 0}
                 >
-                  Temizle
+                  Clear
                 </button>
               </div>
             </div>
@@ -126,7 +126,7 @@ export default function PromptInput({
               value={projectRulesMd}
               onChange={(e) => onProjectRulesMdChange(e.target.value)}
               rows={6}
-              placeholder={'# Örnek\n- Yeni dependency ekleme\n- Mevcut public API kalsın\n- SCSS modules kullan\n- Testler geçmeli'}
+              placeholder={'# Example\n- Do not add new dependencies\n- Keep the existing public API\n- Use SCSS modules\n- Tests must pass'}
               disabled={loading}
               className="mt-3 w-full resize-y rounded-md border border-gray-200 bg-white p-2 text-xs leading-5 text-gray-900 outline-none focus:border-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             />
@@ -135,7 +135,7 @@ export default function PromptInput({
       ) : null}
 
       <div className="text-xs text-gray-600">
-        <div className="font-medium text-gray-700">Örnekler</div>
+        <div className="font-medium text-gray-700">Examples</div>
         <ul className="list-disc pl-5">
           {examples.map((ex) => (
             <li key={ex}>

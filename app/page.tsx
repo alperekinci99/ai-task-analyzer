@@ -35,14 +35,14 @@ export default function Home() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        const message = data?.error || 'Analiz başarısız.';
+        const message = data?.error || 'Analysis failed.';
         setError(String(message));
         return;
       }
 
       setAnalysis(data as PromptAnalysis);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Bilinmeyen hata.');
+      setError(e instanceof Error ? e.message : 'Unknown error.');
     } finally {
       setLoading(false);
     }
@@ -56,12 +56,12 @@ export default function Home() {
             <div>
               <h1 className={styles.title}>AI Task &amp; Prompt Linter</h1>
               <p className={styles.subtitle}>
-                Prompt/task açıklamalarını rubric ile analiz eder, iyileştirir ve optimize edilmiş bir prompt üretir.
+                Analyzes prompt and task descriptions with a rubric, improves them, and generates an optimized prompt.
               </p>
             </div>
 
             <div className={styles.profileLinks}>
-              <span className={styles.profileLabel}>Geliştirici</span>
+              <span className={styles.profileLabel}>Developer</span>
               <a
                 href="https://github.com/alperekinci99"
                 target="_blank"

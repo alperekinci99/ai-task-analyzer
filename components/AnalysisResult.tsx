@@ -9,14 +9,14 @@ type Props = {
 };
 
 const LABELS: Record<keyof PromptAnalysis['breakdown'], string> = {
-  goal_clarity: 'Hedef netliği',
-  context_completeness: 'Bağlam bütünlüğü',
-  output_specification: 'Çıktı tanımı',
-  constraints: 'Kısıtlar',
-  edge_cases: 'Edge case’ler',
-  tool_instructions: 'Tool / ortam talimatları',
-  definition_of_done: 'Tamamlanma kriterleri',
-  token_efficiency: 'Token verimliliği',
+  goal_clarity: 'Goal clarity',
+  context_completeness: 'Context completeness',
+  output_specification: 'Output specification',
+  constraints: 'Constraints',
+  edge_cases: 'Edge cases',
+  tool_instructions: 'Tool / environment instructions',
+  definition_of_done: 'Definition of done',
+  token_efficiency: 'Token efficiency',
 };
 
 export default function AnalysisResult({ analysis }: Props) {
@@ -24,9 +24,9 @@ export default function AnalysisResult({ analysis }: Props) {
 
   const scoreTone = useMemo(() => {
     const score = analysis.score;
-    if (score >= 85) return { label: 'Yeterli', number: 'text-emerald-600', badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200' };
-    if (score >= 65) return { label: 'Kısmen yeterli', number: 'text-amber-600', badge: 'bg-amber-50 text-amber-700 ring-amber-200' };
-    return { label: 'Yetersiz', number: 'text-red-600', badge: 'bg-red-50 text-red-700 ring-red-200' };
+    if (score >= 85) return { label: 'Strong', number: 'text-emerald-600', badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200' };
+    if (score >= 65) return { label: 'Fair', number: 'text-amber-600', badge: 'bg-amber-50 text-amber-700 ring-amber-200' };
+    return { label: 'Weak', number: 'text-red-600', badge: 'bg-red-50 text-red-700 ring-red-200' };
   }, [analysis.score]);
 
   const breakdownEntries = useMemo(
@@ -49,9 +49,9 @@ export default function AnalysisResult({ analysis }: Props) {
       <div className="rounded-lg border border-gray-200 bg-white p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">Prompt Skoru</h2>
+            <h2 className="text-sm font-semibold text-gray-900">Prompt Score</h2>
             <p className="mt-1 text-xs text-gray-600">
-              Bu skor, analiz ettiğiniz orijinal prompt’un hazırlık seviyesidir.
+              This score reflects how ready your original prompt is for execution.
             </p>
             <div className="mt-1 text-4xl font-semibold tracking-tight text-gray-900">
               <span className={scoreTone.number}>{analysis.score}</span>
@@ -78,9 +78,9 @@ export default function AnalysisResult({ analysis }: Props) {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h3 className="text-sm font-semibold text-gray-900">Sorunlar</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Issues</h3>
           {analysis.issues.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600">Belirgin bir sorun tespit edilmedi.</p>
+            <p className="mt-2 text-sm text-gray-600">No major issues detected.</p>
           ) : (
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
               {analysis.issues.map((it, idx) => (
@@ -91,9 +91,9 @@ export default function AnalysisResult({ analysis }: Props) {
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h3 className="text-sm font-semibold text-gray-900">Öneriler</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Suggestions</h3>
           {analysis.suggestions.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600">Geliştirme önerisi yok.</p>
+            <p className="mt-2 text-sm text-gray-600">No suggestions available.</p>
           ) : (
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
               {analysis.suggestions.map((it, idx) => (
@@ -106,7 +106,7 @@ export default function AnalysisResult({ analysis }: Props) {
 
       {analysis.warnings && analysis.warnings.length > 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h3 className="text-sm font-semibold text-gray-900">Uyarılar</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Warnings</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
             {analysis.warnings.map((it, idx) => (
               <li key={`${idx}-${it}`}>{it}</li>
@@ -117,7 +117,7 @@ export default function AnalysisResult({ analysis }: Props) {
 
       {analysis.detected_strengths && analysis.detected_strengths.length > 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h3 className="text-sm font-semibold text-gray-900">Güçlü yanlar</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Detected strengths</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
             {analysis.detected_strengths.map((it, idx) => (
               <li key={`${idx}-${it}`}>{it}</li>
@@ -128,23 +128,23 @@ export default function AnalysisResult({ analysis }: Props) {
 
       <div className="rounded-lg border border-gray-200 bg-white p-5">
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-sm font-semibold text-gray-900">İyileştirilmiş Prompt</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Optimized Prompt</h3>
           <button
             type="button"
             onClick={copyOptimized}
             className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 hover:bg-gray-50"
             disabled={!analysis.optimized_prompt}
           >
-            {copied ? 'Kopyalandı' : 'Kopyala'}
+            {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
 
         <p className="mt-2 text-xs text-gray-600">
-          Not: Bu çıktı bir şablondur. “Belirtilmedi” alanlarını doldurdukça hazırlık skoru yükselir.
+          Note: This output is a template. Filling in the “Not specified” sections will improve your readiness score.
         </p>
 
         <pre className="mt-3 overflow-x-auto rounded-md bg-gray-950 p-4 text-sm leading-6 text-gray-100">
-          <code>{analysis.optimized_prompt || '(boş)'}</code>
+          <code>{analysis.optimized_prompt || '(empty)'}</code>
         </pre>
       </div>
     </section>
