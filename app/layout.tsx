@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, Roboto_Mono } from 'next/font/google';
+
+import GoogleAnalytics from '@/components/GoogleAnalytics';
+
 import './globals.css';
 
 const inter = Inter({
@@ -64,6 +67,7 @@ export default function RootLayout({
         className={`${inter.variable} ${robotoMono.variable} antialiased`}
       >
         {children}
+        <GoogleAnalytics />
       </body>
     </html>
   );
