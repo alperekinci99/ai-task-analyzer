@@ -10,12 +10,32 @@
   @apply mx-auto max-w-5xl px-6 py-6;
 }
 
+.headerContent {
+  @apply flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between;
+}
+
 .title {
   @apply text-xl font-semibold tracking-tight text-gray-900;
 }
 
 .subtitle {
   @apply mt-1 text-sm text-gray-600;
+}
+
+.profileLinks {
+  @apply flex flex-wrap items-center gap-2 text-sm;
+}
+
+.profileLabel {
+  @apply mr-1 text-xs font-medium uppercase tracking-wide text-gray-500;
+}
+
+.profileLink {
+  @apply inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:border-gray-300 hover:text-gray-900;
+}
+
+.profileIcon {
+  @apply mr-1.5 h-4 w-4 flex-shrink-0;
 }
 
 .main {
