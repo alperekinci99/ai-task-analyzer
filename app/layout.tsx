@@ -53,6 +53,9 @@ export const metadata: Metadata = {
     title: 'AI Task & Prompt Linter',
     description: 'Analyze prompt and task quality and generate an improved prompt template.',
   },
+  verification: {
+    google: '-Q1L_sTtdLx0eF59NkEAazsfxF9wcc8ug87I8vzA_Cc',
+  },
   category: 'technology',
 };
 
