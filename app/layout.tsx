@@ -24,8 +24,25 @@ export const metadata: Metadata = {
     default: 'AI Task & Prompt Linter',
     template: '%s | AI Task & Prompt Linter',
   },
-  description: 'A tool for AI coding assistants that analyzes prompt and task quality, scores them, and generates an improved prompt template.',
+  description:
+    'Analyze AI coding prompts, developer task specs, and prompt engineering instructions. Score prompt quality, improve clarity, and generate an optimized prompt for coding agents.',
   applicationName: 'AI Task & Prompt Linter',
+  keywords: [
+    'AI prompt analyzer',
+    'prompt linter',
+    'prompt engineering tool',
+    'AI coding prompt',
+    'developer prompt checker',
+    'task specification analyzer',
+    'agent mode prompt',
+    'prompt quality score',
+    'AI task linter',
+    'coding assistant prompt',
+  ],
+  authors: [{ name: 'Alper Ekinci', url: 'https://github.com/alperekinci99' }],
+  creator: 'Alper Ekinci',
+  publisher: 'AI Task & Prompt Linter',
+  referrer: 'origin-when-cross-origin',
   alternates: {
     canonical: '/',
   },
@@ -43,15 +60,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    title: 'AI Task & Prompt Linter',
-    description: 'Analyze prompt and task quality with a rubric and get repo-aware recommendations with Agent Mode.',
+    title: 'AI Task & Prompt Linter for Developers',
+    description:
+      'Analyze AI prompts, developer task descriptions, and coding agent instructions with rubric-based scoring and optimized prompt generation.',
     url: '/',
     siteName: 'AI Task & Prompt Linter',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Task & Prompt Linter',
-    description: 'Analyze prompt and task quality and generate an improved prompt template.',
+    title: 'AI Task & Prompt Linter for Developers',
+    description:
+      'Score and improve AI coding prompts, developer task specs, and agent instructions with an optimized prompt output.',
   },
   verification: {
     google: '-Q1L_sTtdLx0eF59NkEAazsfxF9wcc8ug87I8vzA_Cc',

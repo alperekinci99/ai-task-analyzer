@@ -23,11 +23,15 @@
 }
 
 .profileLinks {
-  @apply flex flex-wrap items-center gap-2 text-sm;
+  @apply flex flex-col gap-2 text-sm sm:flex-shrink-0 sm:items-end;
 }
 
 .profileLabel {
-  @apply mr-1 text-xs font-medium uppercase tracking-wide text-gray-500;
+  @apply text-xs font-medium uppercase tracking-wide text-gray-500;
+}
+
+.profileLinkRow {
+  @apply flex flex-wrap items-center gap-2 sm:justify-end;
 }
 
 .profileLink {
@@ -52,4 +56,32 @@
 
 .results {
   @apply pt-2;
+}
+
+.seoSection {
+  @apply mt-10 space-y-5 rounded-2xl border border-gray-200 bg-white p-6;
+}
+
+.seoBlock {
+  @apply space-y-2;
+}
+
+.seoTitle {
+  @apply text-lg font-semibold tracking-tight text-gray-900;
+}
+
+.seoText {
+  @apply text-sm leading-6 text-gray-600;
+}
+
+.seoGrid {
+  @apply grid grid-cols-1 gap-4 md:grid-cols-3;
+}
+
+.seoCard {
+  @apply rounded-xl border border-gray-200 bg-gray-50 p-4;
+}
+
+.seoCardTitle {
+  @apply text-sm font-semibold text-gray-900;
 }
